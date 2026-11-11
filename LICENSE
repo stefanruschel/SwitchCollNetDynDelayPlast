@@ -1,0 +1,37 @@
+MIT License
+
+Copyright (c) 2026 Stefan Ruschel, Emanuil Hristov, Hil G. E. Meijer, Stephen Coombes, and Rachel Nicks
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+--------------------------------------------------------------------------------
+Scope of this licence
+
+The MIT License above applies to the source code of this repository (*.jl, *.m,
+*.tex and the TOML files).
+
+The simulation results, tables and figures in the folders figure1/, figure2/,
+figure3/ and supplement/ (data/, tables/ and Figure*.pdf) are licensed under the
+Creative Commons Attribution 4.0 International License (CC BY 4.0),
+https://creativecommons.org/licenses/by/4.0/.
+
+The connectome matrices in connectome_data/ are derived from WU-Minn HCP Open
+Access data and are redistributed under the WU-Minn HCP Consortium Open Access
+Data Use Terms, not under either of the licences above; see
+connectome_data/README.md.

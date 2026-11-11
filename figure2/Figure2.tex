@@ -1,0 +1,106 @@
+% Figure2.tex — Fig. 2 of the Letter (pgfplots), drawn at the final size: 510 pt = \textwidth of the Letter, same style as
+% Figure1.tex (labels \small = 9 pt, tick labels \footnotesize = 8 pt, Computer/Latin Modern).
+%   julia -t auto --project=.. run_figure2_sweeps.jl   -> data/sweep_figure2*.csv
+%   julia --project=.. export_figure2.jl               -> tables/*
+%   lualatex Figure2.tex                               -> Figure2.pdf
+% Squares: Fig. 1(b) at (sigma, nu) = (0.6, 1.44) and Fig. 1(c) at (0.8, 1.56) in (b), Fig. 1(d) at (1.0, 1.4) in (g).
+% Layout: column 1 = (a) interaction functions (60 % shorter than a map), its legend (outside the axis) and the colour key;
+%         columns 2–4 = maps (b) (d) (f) over (c) (e) (g), square, x = log10 σ (ticks labelled 0.3, 1, 3), y = ν.
+\documentclass[10pt]{standalone}
+\usepackage{amsmath,amssymb}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{patterns.meta}
+\input{tables/params.tex}
+\definecolor{colhc}{rgb}{0.35,0.70,0.25}\definecolor{colhd}{rgb}{0,0.6,0.6}\definecolor{colhe}{rgb}{0.20,0.45,0.95}
+\definecolor{colhf}{rgb}{0.60,0.20,0.70}\definecolor{colhg}{rgb}{0.90,0.45,0.05}
+\definecolor{swc}{rgb}{0,1,1}\definecolor{chc}{rgb}{1,0,1}
+\newlength{\W}\setlength{\W}{101pt}
+\pgfplotsset{
+  /pgf/number format/.cd, set thousands separator={}, /pgfplots/.cd,
+  every axis/.append style={scaled ticks=false},
+  fig/.style={scale only axis, width=\W, height=\W, font=\footnotesize, label style={font=\small},
+    title style={font=\small, at={(0,1)}, anchor=south west, inner sep=0pt, yshift=0.4pt, xshift=-0.5pt},
+    major tick length=2pt, tick align=inside, every tick label/.append style={inner sep=1pt},
+    xlabel style={inner sep=1pt}, ylabel style={inner sep=1pt}, enlargelimits=false, axis on top},
+  ftmap/.style={fig, xmin=\Xmin, xmax=\Xmax, ymin=\Ymin, ymax=\Ymax, xtick={\XtA,\XtB,\XtC}, xticklabels={$0.3$,$1$,$3$},
+    ytick={1.2,1.4,1.6}, yticklabels={$1.2$,$1.4$,$1.6$}},
+  ftcells/.style={matrix plot*, mesh/cols=#1, mesh/color input=explicit, point meta=explicit symbolic},
+}
+% one map: #1 panel letter (= file key), plus optional extra options in #2
+\newcommand{\mapcontent}[1]{%
+  \addplot[ftcells=\NX] table[x=x, y=y, meta=c] {tables/map_#1.dat};
+  \addplot[chc, line width=0.3pt, unbounded coords=jump] table {tables/ch_hatch_#1.dat};
+  \addplot[chc, line width=0.55pt, unbounded coords=jump] table {tables/ch_bnd_#1.dat};
+  \addplot[swc, line width=0.3pt, unbounded coords=jump] table {tables/sw_hatch_#1.dat};
+  \addplot[swc, line width=0.55pt, unbounded coords=jump] table {tables/sw_bnd_#1.dat};}
+\pgfplotsset{ftsq/.style={only marks, mark=square*, mark size=1.8pt, mark options={fill=white, draw=black, line width=0.45pt}}}
+\newcommand{\xa}{24pt}\newcommand{\xone}{166pt}\newcommand{\xtwo}{286pt}\newcommand{\xthree}{406pt}
+\newcommand{\yone}{-18pt}\newcommand{\ytwo}{-156pt}% row 2 one text line (11 pt) lower than before
+\begin{document}
+\begin{tikzpicture}
+\useasboundingbox (0,0) rectangle (510pt,-279pt);
+
+% =============================== column 1: (a), legend, key
+\begin{axis}[fig, at={(\xa,\yone)}, anchor=north west, height=0.6\W, title={(a)}, trig format plots=rad,
+    xmin=-pi, xmax=pi, ymin=-1.15, ymax=1.15, xtick={-3.14159,0,3.14159}, xticklabels={$-\pi$,$0$,$\pi$},
+    ytick={-1,0,1}, yticklabels={$-1$,$0$,$1$}, xlabel={$x$}, ylabel={$h(x)$}, domain=-pi:pi, samples=161]
+  \addplot[black!35, line width=0.3pt, densely dashed] coordinates {(-3.1416,0) (3.1416,0)};
+  \addplot[black, line width=0.8pt] {sin(x)};
+  \addplot[colhc, line width=0.8pt] {sin(x-pi/4)};
+  \addplot[colhd, line width=0.8pt] {sin(x-3*pi/8)};
+  \addplot[colhe, line width=0.8pt] {sin(x-pi/2)};
+  \addplot[colhf, line width=0.8pt, dashed] {0.86083339*(sin(x-pi/2)+sin(2*x)/3)};
+  \addplot[colhg, line width=0.8pt, dashed] {0.56812611*(sin(x-pi/2)+sin(2*x))};
+\end{axis}
+% legend (outside the axis)
+\begin{scope}[shift={(\xa,-101pt)}, font=\footnotesize]% lines start at the left edge of (a)
+  \foreach \c/\s/\lab [count=\k from 0] in {
+      black/solid/{(b)\ $\sin x$}, colhc/solid/{(c)\ $\sin(x-\pi/4)$}, colhd/solid/{(d)\ $\sin(x-3\pi/8)$},
+      colhe/solid/{(e)\ $\sin(x-\pi/2)$}, colhf/dashed/{(f)\ $c_1[\sin(x-\pi/2)+\tfrac13\sin 2x]$},
+      colhg/dashed/{(g)\ $c_2[\sin(x-\pi/2)+\sin 2x]$}} {
+    \draw[\c, \s, line width=0.8pt] (0,-\k*9.5pt) -- (11pt,-\k*9.5pt);
+    \node[anchor=west, inner sep=1.5pt] at (11pt,-\k*9.5pt) {\lab};
+  }
+\end{scope}
+% colour key (smaller than a map)
+\begin{axis}[fig, at={(44pt,\dimexpr\ytwo-0.19\W\relax)}, anchor=north west, width=0.62\W, height=0.62\W, xmin=0, xmax=1, ymin=0, ymax=1,% key box centred on the row-2 maps
+    xtick={0,0.5,1}, ytick={0.5,1}, xticklabels={$0$,$0.5$,$1$}, yticklabels={$0.5$,$1$},
+    xlabel={$\langle R_1\rangle$}, ylabel={$\langle R_2\rangle$}, title={color key}]
+  \addplot[ftcells=48] table[x=x, y=y, meta=c] {tables/key.dat};
+\end{axis}
+% hatching legend below the key (same colours and hatch directions as in the maps)
+\newcommand{\hatchbox}[3]{% #1 colour, #2 hatch angle, #3 lower-left corner
+  \begin{scope}[shift={#3}]
+    \fill[pattern={Lines[angle=#2, distance=2.2pt, line width=0.35pt]}, pattern color=#1] (0,0) rectangle (10pt,7pt);
+    \draw[#1, line width=0.55pt] (0,0) rectangle (10pt,7pt);
+  \end{scope}}
+\begin{scope}[font=\footnotesize]
+  \hatchbox{chc}{-45}{(\xa,-270pt)}       \node[anchor=west, inner sep=1.5pt] at (\dimexpr\xa+10pt\relax,-266.5pt) {chimera-like};
+  \hatchbox{swc}{45}{(\dimexpr\xa+64pt\relax,-270pt)} \node[anchor=west, inner sep=1.5pt] at (\dimexpr\xa+74pt\relax,-266.5pt) {switching};
+\end{scope}
+
+% =============================== maps
+% row 1: (b) (c) (d), single harmonic with growing phase lag; row 2: (e) (f) (g)
+\begin{axis}[ftmap, at={(\xone,\yone)}, anchor=north west, title={(b)}, ylabel={$\nu$}]
+  \mapcontent{b}
+  \addplot[ftsq] coordinates {(-0.22185,1.44) (-0.09691,1.56)};
+\end{axis}
+\begin{axis}[ftmap, at={(\xtwo,\yone)}, anchor=north west, title={(c)}]
+  \mapcontent{c}
+\end{axis}
+\begin{axis}[ftmap, at={(\xthree,\yone)}, anchor=north west, title={(d)}]
+  \mapcontent{d}
+\end{axis}
+\begin{axis}[ftmap, at={(\xone,\ytwo)}, anchor=north west, title={(e)}, ylabel={$\nu$}, xlabel={$\sigma$}]
+  \mapcontent{e}
+\end{axis}
+\begin{axis}[ftmap, at={(\xtwo,\ytwo)}, anchor=north west, title={(f)}, xlabel={$\sigma$}]
+  \mapcontent{f}
+\end{axis}
+\begin{axis}[ftmap, at={(\xthree,\ytwo)}, anchor=north west, title={(g)}, xlabel={$\sigma$}]
+  \mapcontent{g}
+  \addplot[ftsq] coordinates {(0,1.4)};
+\end{axis}
+\end{tikzpicture}
+\end{document}

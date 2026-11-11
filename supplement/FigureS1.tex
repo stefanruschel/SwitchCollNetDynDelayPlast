@@ -1,0 +1,68 @@
+% FigureS1.tex - SM Fig. S1 (pgfplots), 510 pt wide (double-column width of the SM), style of Figs. 1, 2.
+%   julia --project=.. export_figureS1.jl   ->  tables/*.dat        lualatex FigureS1.tex  ->  FigureS1.pdf
+% (a) polynomial rule (6) on the connectome at nu = 0.9, eps = 0.002 (other parameters as Fig. 1(d)): speeds, R1, R2.
+% (b)-(f) share of switching runs (6 initial conditions per value) in the one-parameter sweeps (run_one_parameter_sweeps.jl).
+\documentclass[10pt]{standalone}
+\usepackage{amsmath,amssymb}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\definecolor{vlight}{rgb}{0.62,0.82,0.62}
+\definecolor{vdark}{rgb}{0,0.5,0}
+\definecolor{rtwo}{rgb}{0,0.2,0.9}
+\newlength{\W}\setlength{\W}{66pt}
+\pgfplotsset{
+  /pgf/number format/.cd, set thousands separator={}, /pgfplots/.cd,
+  every axis/.append style={scaled ticks=false},
+  ftfig/.style={scale only axis, width=\W, height=0.8\W, font=\footnotesize, label style={font=\small},
+    title style={font=\small, at={(0,1)}, anchor=south west, inner sep=0pt, yshift=0.4pt, xshift=-0.5pt},
+    major tick length=2pt, tick align=inside, every tick label/.append style={inner sep=1pt},
+    xlabel style={inner sep=1pt}, ylabel style={inner sep=1pt}, enlargelimits=false, axis on top, clip mode=individual},
+  ftshare/.style={ftfig, ymin=-0.05, ymax=1.3, ytick={0,0.5,1}, yticklabels={}},
+  ftpts/.style={black, line width=0.7pt, mark=*, mark size=1.1pt},
+}
+\begin{document}
+\begin{tikzpicture}
+\useasboundingbox (0,0) rectangle (510pt,-190pt);
+% ---------------- (a) rule (6) time series
+\begin{axis}[ftfig, at={(26pt,-19pt)}, anchor=north west, width=446pt, height=58pt, title={(a)\ \ rule (6), $\nu=0.9$, $\varepsilon=2\times10^{-3}$},
+    xmin=0, xmax=10000, ymin=0, ymax=21, xtick={0,2000,4000,6000,8000,10000}, ytick={0,10,20}, xlabel={$t$}, ylabel={$v_i$}]
+  \pgfplotsinvokeforeach{2,...,68}{\addplot[vlight, line width=0.25pt] table[x index=0, y index=#1] {tables/speeds_a.dat};}
+  \addplot[vdark, line width=0.7pt] table[x index=0, y index=1] {tables/speeds_a.dat};
+\end{axis}
+\begin{axis}[scale only axis, at={(26pt,-19pt)}, anchor=north west, width=446pt, height=58pt, font=\footnotesize, label style={font=\small},
+    axis y line*=right, axis x line=none, xmin=0, xmax=10000, ymin=0, ymax=1.05, ytick={0,0.5,1}, major tick length=2pt,
+    tick align=inside, every tick label/.append style={inner sep=1pt}, ylabel style={inner sep=1pt},
+    ylabel={\textcolor{black!50}{$R_1$}, \textcolor{rtwo}{$R_2$}}]
+  \addplot[black!50, line width=0.6pt] table[x=t, y=R1] {tables/order_a.dat};
+  \addplot[rtwo, line width=0.6pt] table[x=t, y=R2] {tables/order_a.dat};
+\end{axis}
+% ---------------- (b)-(f) switching share
+\begin{axis}[ftfig, ftshare, at={(26pt,-117pt)}, anchor=north west, title={(b)}, xmode=log, xmin=7e-4, xmax=4.5e-2,
+    xtick={0.001,0.01}, xticklabels={$10^{-3}$,$10^{-2}$}, xlabel={$\varepsilon$}, yticklabels={$0$,$0.5$,$1$}, ylabel={switching share}]
+  \addplot[ftpts] table[x=x, y=s] {tables/share_eps.dat};
+\end{axis}
+\begin{axis}[ftfig, ftshare, at={(124pt,-117pt)}, anchor=north west, title={(c)}, xmode=log, xmin=0.006, xmax=3.5,
+    xtick={0.01,0.1,1}, xticklabels={$0.01$,$0.1$,$1$}, xlabel={spread of $v_i(0)$}]
+  \addplot[ftpts] table[x=x, y=s] {tables/share_spread.dat};
+\end{axis}
+\begin{axis}[ftfig, ftshare, at={(222pt,-117pt)}, anchor=north west, title={(d)\ \ $\nu=1.4$}, xmin=0, xmax=13,
+    xtick={1,5,12}, xticklabels={$1$,$5$,$12$}, xlabel={$\beta$}]
+  \addplot[ftpts] table[x=x, y=s] {tables/share_beta.dat};
+\end{axis}
+\begin{axis}[ftfig, ftshare, at={(320pt,-117pt)}, anchor=north west, title={(e)}, xmin=0.85, xmax=2.25,
+    xtick={1,1.5,2}, xticklabels={$1$,$1.5$,$2$}, xlabel={$\nu$}]
+  \addplot[ftpts, mark=square*, mark size=1pt] table[x=x, y=s] {tables/share_nu_beta8.dat};
+  \addplot[ftpts, black!45, mark=*, mark options={fill=white}] table[x=x, y=s] {tables/share_nu_beta3.dat};
+  \addplot[only marks, mark=triangle*, mark size=1.8pt, rtwo] coordinates {(1.4,1)};
+  \node[anchor=south, font=\scriptsize, inner sep=1pt] at (axis cs:1.12,1.03) {$\beta=8$};
+  \node[anchor=south, font=\scriptsize, inner sep=1pt, black!55] at (axis cs:1.78,1.03) {$\beta=3$};
+\end{axis}
+\begin{axis}[ftfig, ftshare, at={(418pt,-117pt)}, anchor=north west, title={(f)\ \ rule (6)}, xmin=0.35, xmax=1.65,
+    xtick={0.5,1,1.5}, xticklabels={$0.5$,$1$,$1.5$}, xlabel={$\nu$}]
+  \addplot[ftpts, black!45, mark options={fill=white}] table[x=x, y=s] {tables/share_rule6_eps0.01.dat};
+  \addplot[ftpts] table[x=x, y=s] {tables/share_rule6_eps0.002.dat};
+  \node[anchor=south, font=\scriptsize, inner sep=1pt] at (axis cs:0.9,0.86) {$\varepsilon=2\times10^{-3}$};
+  \node[anchor=south east, font=\scriptsize, inner sep=1pt, black!55] at (axis cs:1.63,0.06) {$\varepsilon=10^{-2}$};
+\end{axis}
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,131 @@
+% Figure1.tex — Fig. 1 of the Letter (pgfplots), drawn at the final size: 510 pt wide = \textwidth of the Letter
+% (revtex4-2, reprint, pre). Fonts: Computer/Latin Modern, labels \small (9 pt), tick labels \footnotesize (8 pt).
+%
+% Pipeline (from this folder):
+%   julia --project=.. simulate_figure1.jl b      -> data/figure1b.csv   (likewise c and d)
+%   julia --project=.. export_figure1.jl          -> tables/*.dat, tables/params.tex
+%   lualatex Figure1.tex                          -> Figure1.pdf
+% (lualatex because column 4 draws 3 x 68 speed curves; pdflatex runs out of memory.)
+%
+% Layout: 3 rows x 5 columns; panels square (59 pt), column 4 twice as wide.
+%   (a1) w_ij   (b1) raster [0,100]          (b2) raster window, reordered  (b3) mean frequencies   (b4) speeds, R1
+%   (a2) d_ij   (c1) raster [0,100]          (c2) raster window, reordered  (c3) (v̄, Ω̄)            (c4) speeds, R1
+%   (a3) w vs d (d1) raster [0,100] reordered (d2) raster window, reordered (d3) (v̄, Ω̄)            (d4) speeds, R1, R2
+\documentclass[10pt]{standalone}
+\usepackage{amsmath,amssymb}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{calc}
+\input{tables/params.tex}
+\definecolor{vlight}{rgb}{0.62,0.82,0.62}
+\definecolor{vdark}{rgb}{0,0.5,0}
+\definecolor{rtwo}{rgb}{0,0.2,0.9}
+\newcommand{\W}{59pt}        % panel width = height
+\newcommand{\WW}{118pt}      % column 4 width
+\newcommand{\pitch}{97pt}    % row pitch
+\pgfplotsset{
+  /pgf/number format/.cd, set thousands separator={}, /pgfplots/.cd,
+  every axis/.append style={scaled ticks=false},
+  fig/.style={scale only axis, width=\W, height=\W, font=\footnotesize, label style={font=\small},
+    title style={font=\small, at={(0,1)}, anchor=south west, inner sep=0pt, yshift=0.4pt, xshift=-0.5pt},
+    major tick length=2pt, tick align=inside, every tick label/.append style={inner sep=1pt},
+    xlabel style={inner sep=1pt}, ylabel style={inner sep=1pt},
+    enlargelimits=false, axis on top, clip mode=individual},
+  noylabels/.style={yticklabels={}},
+  raster/.style={fig, ymin=0.5, ymax=68.5, ytick={1,68}, xlabel={$t$}},
+  spk/.style={only marks, mark=|, mark size=0.42pt, mark options={line width=0.32pt, black}},
+  series/.style={fig, width=\WW, xmin=0, xmax=2000, xtick={0,500,1000,1500,2000}, xlabel={$t$}, ylabel={$v_i$}},
+  twin/.style={scale only axis, width=\WW, height=\W, font=\footnotesize, label style={font=\small},
+    axis y line*=right, axis x line=none, ymin=0, ymax=1.05, ytick={0,0.5,1}, xmin=0, xmax=2000,
+    major tick length=2pt, tick align=inside, every tick label/.append style={inner sep=1pt},
+    ylabel style={inner sep=1pt}},
+  greymap/.style={fig, colormap={bw}{gray(0cm)=(1); gray(1cm)=(0)}, point meta min=0, point meta max=1,
+    xmin=0.5, xmax=68.5, ymin=0.5, ymax=68.5, y dir=reverse, xtick={20,40,60}, ytick={20,40,60}, xlabel={$j$}, ylabel={$i$}},
+}
+% column x positions (left edge of the axis box) and row y positions (top edge of the axis box)
+\newcommand{\xa}{20pt}\newcommand{\xone}{105pt}\newcommand{\xtwo}{189pt}\newcommand{\xthree}{278pt}\newcommand{\xfour}{363pt}
+\newcommand{\yrow}[1]{\dimexpr -16pt - #1\dimexpr\pitch\relax\relax}
+% speeds (all light green, v_1 dark green) + grey window band
+\newcommand{\speeds}[4]{% #1 key (B/C/D, for \Vmax<key>), #2 file key (b/c/d), #3 window start, #4 window end
+  \addplot[fill=black!12, draw=none] coordinates {(#3,0) (#4,0) (#4,\csname Vmax#1\endcsname) (#3,\csname Vmax#1\endcsname)} \closedcycle;
+  \pgfplotsinvokeforeach{2,...,68}{\addplot[vlight, line width=0.25pt] table[x index=0, y index=##1] {tables/speeds_#2.dat};}
+  \addplot[vdark, line width=0.7pt] table[x index=0, y index=1] {tables/speeds_#2.dat};}
+\begin{document}
+\begin{tikzpicture}
+\useasboundingbox (0,0) rectangle (510pt,-294pt);
+
+% =============================== column (a): connectome
+\begin{axis}[greymap, at={(\xa,\yrow{0})}, anchor=north west, title={(a1)\ \ $w_{ij}$}]
+  \addplot[matrix plot*, mesh/cols=68, point meta=explicit] table[x=j, y=i, meta=z] {tables/weights.dat};
+\end{axis}
+\begin{axis}[greymap, at={(\xa,\yrow{1})}, anchor=north west, title={(a2)\ \ $d_{ij}$}]
+  \addplot[matrix plot*, mesh/cols=68, point meta=explicit] table[x=j, y=i, meta=z] {tables/distances.dat};
+\end{axis}
+\begin{axis}[fig, at={(\xa,\yrow{2})}, anchor=north west, title={(a3)}, xmin=0, xmax=\DistMax, ymin=0, ymax=\WMax,
+    xtick={0,0.1,0.2,0.3}, xticklabels={$0$,$0.1$,$0.2$,$0.3$}, ytick={0,0.01,0.02,0.03}, yticklabels={$0$,$1$,$2$,$3$},
+    xlabel={$d_{ij}$}, ylabel={$10^{2}\,w_{ij}$}]
+  \addplot[only marks, mark=*, mark size=0.35pt, black!30] table[x=d, y=w] {tables/scatter_a3.dat};
+  \addplot[black, line width=0.9pt] table[x=d, y=w] {tables/fit_a3.dat};
+\end{axis}
+
+% =============================== row (b): chimera
+\begin{axis}[raster, at={(\xone,\yrow{0})}, anchor=north west, title={(b1)}, xmin=0, xmax=100, xtick={0,50,100}, ylabel={$i$}]
+  \addplot[spk] table[x=t, y=y] {tables/raster_b1.dat};
+\end{axis}
+\begin{axis}[raster, at={(\xtwo,\yrow{0})}, anchor=north west, title={(b2)\ reordered}, noylabels, xmin=\WinTwoStartB, xmax=\WinTwoEndB,
+    xtick={1900,1950,2000}]
+  \addplot[spk] table[x=t, y=y] {tables/raster_b2.dat};
+\end{axis}
+\begin{axis}[fig, at={(\xthree,\yrow{0})}, anchor=north west, title={(b3)}, noylabels, ymin=0.5, ymax=68.5, ytick={1,68},
+    xmin=\FreqMin, xmax=\FreqMax, xtick=\FreqTicks, xlabel={$\bar\Omega_i$}]
+  \addplot[black, line width=0.4pt, mark=*, mark size=0.55pt] table[x=omega, y=y] {tables/freq_b3.dat};
+\end{axis}
+\begin{axis}[series, at={(\xfour,\yrow{0})}, anchor=north west, title={(b4)}, ymin=0, ymax=3.25, ytick={0,1,2,3}]% headroom so R1 stays visibly below 1
+  \speeds{B}{b}{\WinTwoStartB}{\WinTwoEndB}
+  \draw[black!60, densely dotted, line width=0.5pt] (axis cs:1000,0) -- (axis cs:1000,3.25);
+\end{axis}
+\begin{axis}[twin, at={(\xfour,\yrow{0})}, anchor=north west, ylabel={$R_1$}, ymax=1.2]
+  \addplot[black!35, densely dotted, line width=0.5pt] coordinates {(0,1) (2000,1)};% R1 = 1 for reference
+  \addplot[black, line width=0.8pt] table[x=t, y=R1] {tables/order_b.dat};
+\end{axis}
+
+% =============================== row (c): switching between synchrony and incoherence
+\begin{axis}[raster, at={(\xone,\yrow{1})}, anchor=north west, title={(c1)}, xmin=0, xmax=100, xtick={0,50,100}, ylabel={$i$}]
+  \addplot[spk] table[x=t, y=y] {tables/raster_c1.dat};
+\end{axis}
+\begin{axis}[raster, at={(\xtwo,\yrow{1})}, anchor=north west, title={(c2)\ reordered}, noylabels, xmin=\WinTwoStartC, xmax=\WinTwoEndC,
+    xtick={1110,1160,1210}]
+  \addplot[spk] table[x=t, y=y] {tables/raster_c2.dat};
+\end{axis}
+\begin{axis}[fig, at={(\xthree,\yrow{1})}, anchor=north west, title={(c3)}, xmin=\TrajVminC, xmax=\TrajVmaxC, ymin=\TrajOminC,
+    ymax=\TrajOmaxC, xtick=\TrajVticksC, ytick=\TrajOticksC, xlabel={$\bar v$}, ylabel={$\bar\Omega$}]
+  \addplot[black, line width=0.35pt] table[x=v, y=omega] {tables/traj_c.dat};
+\end{axis}
+\begin{axis}[series, at={(\xfour,\yrow{1})}, anchor=north west, title={(c4)}, ymin=0, ymax=\VmaxC]
+  \speeds{C}{c}{\WinTwoStartC}{\WinTwoEndC}
+\end{axis}
+\begin{axis}[twin, at={(\xfour,\yrow{1})}, anchor=north west, ylabel={$R_1$}]
+  \addplot[black, line width=1pt] table[x=t, y=R1] {tables/order_c.dat};
+\end{axis}
+
+% =============================== row (d): switching between cluster states
+\begin{axis}[raster, at={(\xone,\yrow{2})}, anchor=north west, title={(d1)\ reordered}, xmin=0, xmax=100, xtick={0,50,100}, ylabel={$i$}]
+  \addplot[spk] table[x=t, y=y] {tables/raster_d1.dat};
+\end{axis}
+\begin{axis}[raster, at={(\xtwo,\yrow{2})}, anchor=north west, title={(d2)\ reordered}, noylabels, xmin=\WinTwoStartD, xmax=\WinTwoEndD,
+    xtick={1190,1240,1290}]
+  \addplot[spk] table[x=t, y=y] {tables/raster_d2.dat};
+\end{axis}
+\begin{axis}[fig, at={(\xthree,\yrow{2})}, anchor=north west, title={(d3)}, xmin=\TrajVminD, xmax=\TrajVmaxD, ymin=\TrajOminD,
+    ymax=\TrajOmaxD, xtick=\TrajVticksD, ytick=\TrajOticksD, xlabel={$\bar v$}, ylabel={$\bar\Omega$}]
+  \addplot[black, line width=0.35pt] table[x=v, y=omega] {tables/traj_d.dat};
+\end{axis}
+\begin{axis}[series, at={(\xfour,\yrow{2})}, anchor=north west, title={(d4)}, ymin=0, ymax=\VmaxD]
+  \speeds{D}{d}{\WinTwoStartD}{\WinTwoEndD}
+\end{axis}
+\begin{axis}[twin, at={(\xfour,\yrow{2})}, anchor=north west, ylabel={\textcolor{black!50}{$R_1$}, \textcolor{rtwo}{$R_2$}}]
+  \addplot[black!50, line width=1pt] table[x=t, y=R1] {tables/order_d.dat};% 50 % grey in (d4) to reduce clutter
+  \addplot[rtwo, line width=1pt] table[x=t, y=R2] {tables/order_d.dat};
+\end{axis}
+\end{tikzpicture}
+\end{document}

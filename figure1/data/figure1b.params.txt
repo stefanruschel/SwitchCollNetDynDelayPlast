@@ -1,0 +1,4 @@
+Fig. 1(b), chimera state
+sigma=0.6 nu=1.44 a=3.141592653589793 r=0.0 amplitude=1.0 rule=sigmoid
+omega=1.0 epsilon=0.01 t_on=1000.0 beta=5.0 window=0.1 vmin=0.1 vmax=20.0
+seed=1 tolerance=1.0e-7 tend=2000.0 saveat=0.5
